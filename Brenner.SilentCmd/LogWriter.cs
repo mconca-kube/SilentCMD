@@ -2,74 +2,74 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace Brenner.SilentCmd
+namespace Brenner.SilentCmd;
+
+internal class LogWriter : IDisposable
 {
-    internal class LogWriter : IDisposable
+    private StreamWriter? _writer;
+
+    public bool Initialized { get { return _writer != null; } }
+
+    /// <summary>
+    /// Initializies a log writer that logs to the specified path.
+    /// </summary>
+    /// <param name="logPath">Path to the destination log file.</param>
+    /// <param name="append">True if entrie should be added to an existing log file</param>
+    public void Initialize(string? logPath = null, bool append = false)
     {
-        private StreamWriter _writer;
-
-        public bool Initialized { get { return _writer != null; } }
-
-        /// <summary>
-        /// Initializies a log writer that logs to the specified path.
-        /// </summary>
-        /// <param name="logPath">Path to the destination log file.</param>
-        /// <param name="append">True if entrie should be added to an existing log file</param>
-        public void Initialize(string logPath = null, bool append = false)
+        try
         {
-            try
+            if (string.IsNullOrEmpty(logPath))
             {
-                string checkedPath = string.IsNullOrEmpty(logPath)
-                    ? @"%temp%\SilentCMD.log"
-                    : logPath;
-
-                string fullPath = Environment.ExpandEnvironmentVariables(checkedPath);
-
-                if (_writer != null)
-                {
-                    _writer.Dispose();
-                }
-
-                _writer = new StreamWriter(fullPath, append);
+                return;
             }
-            catch (Exception e)
+
+            string fullPath = Environment.ExpandEnvironmentVariables(logPath);
+
+            if (_writer != null)
             {
-                Trace.WriteLine(e);
-            }            
+                _writer.Dispose();
+            }
+
+            _writer = new StreamWriter(fullPath, append);
         }
-
-        public void Dispose()
+        catch (Exception e)
         {
-            try
+            Trace.WriteLine(e);
+        }            
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            if (_writer != null)
             {
-                if (_writer != null)
-                {
-                    _writer.Dispose();
-                }
+                _writer.Dispose();
             }
-            catch (Exception e)
-            {
-                Trace.WriteLine(e);
-            }
-            GC.SuppressFinalize(this);
         }
-
-        public void WriteLine(string format, params object[] args)
+        catch (Exception e)
         {
-            try
-            {
-                if (_writer == null)
-                {
-                    Initialize();
-                }
+            Trace.WriteLine(e);
+        }
+        GC.SuppressFinalize(this);
+    }
 
-                string message = string.Format(format, args);
-                _writer.WriteLine("{0} - {1}", DateTime.Now, message);
-            }
-            catch (Exception e)
+    public void WriteLine(string format, params object[] args)
+    {
+        try
+        {
+            if (_writer == null)
             {
-                Trace.WriteLine(e);
+                Initialize();
             }
+
+            string message = string.Format(format, args);
+            _writer?.WriteLine("{0} - {1}", DateTime.Now, message);
+        }
+        catch (Exception e)
+        {
+            Trace.WriteLine(e);
         }
     }
 }
