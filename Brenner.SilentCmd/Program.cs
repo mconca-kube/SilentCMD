@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 
 namespace Brenner.SilentCmd;
 
@@ -10,9 +11,9 @@ public static class Program
     /// </summary>
     [STAThread]
     [SupportedOSPlatform("windows")]
-    public static int Main(string[] args)
+    public async static Task<int> Main(string[] args)
     {
         using var engine = new Engine();
-        return engine.Execute(args);
+        return await engine.ExecuteAsync(args);
     }
 }

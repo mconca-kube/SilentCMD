@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 
 namespace Brenner.SilentCmd;
 
@@ -16,11 +17,10 @@ internal class Engine : IDisposable
     private readonly Configuration _config = new();
     private readonly LogWriter _logWriter = new();
 
-
     /// <summary>
     /// Executes the batch file defined in the arguments
     /// </summary>
-    public int Execute(string[] args)
+    public async Task<int> ExecuteAsync(string[] args)
     {
         try
         {
@@ -33,7 +33,7 @@ internal class Engine : IDisposable
                 return 0;
             }
 
-            DelayIfNecessary();
+            await DelayIfNecessaryAsync();
             ResolveBatchFilePath();
 
             _logWriter.WriteLine(Resources.StartingCommand, _config.BatchFilePath);
@@ -61,16 +61,15 @@ internal class Engine : IDisposable
         finally
         {
             _logWriter.WriteLine(Resources.FinishedCommand, _config.BatchFilePath);
-            _logWriter.Dispose();                
         }
     }
 
-    private void DelayIfNecessary()
+    private async Task DelayIfNecessaryAsync()
     {
         if (_config.Delay <= TimeSpan.FromSeconds(0)) return;
 
         _logWriter.WriteLine("Delaying execution by {0} seconds", _config.Delay.TotalSeconds);
-        Thread.Sleep(_config.Delay);
+        await Task.Delay(_config.Delay);
     }
 
     private static void ShowHelp()
