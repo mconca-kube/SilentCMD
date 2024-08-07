@@ -26,10 +26,7 @@ internal class LogWriter : IDisposable
 
             string fullPath = Environment.ExpandEnvironmentVariables(logPath);
 
-            if (_writer != null)
-            {
-                _writer.Dispose();
-            }
+            _writer?.Dispose();
 
             _writer = new StreamWriter(fullPath, append);
         }
@@ -43,10 +40,7 @@ internal class LogWriter : IDisposable
     {
         try
         {
-            if (_writer != null)
-            {
-                _writer.Dispose();
-            }
+            _writer?.Dispose();
         }
         catch (Exception e)
         {

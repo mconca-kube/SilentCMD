@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Versioning;
 
 namespace Brenner.SilentCmd;
 
@@ -8,9 +9,10 @@ public static class Program
     /// The main entry point for the application.
     /// </summary>
     [STAThread]
+    [SupportedOSPlatform("windows")]
     public static int Main(string[] args)
     {
-        var engine = new Engine();
+        using var engine = new Engine();
         return engine.Execute(args);
     }
 }

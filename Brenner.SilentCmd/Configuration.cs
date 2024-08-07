@@ -8,6 +8,7 @@ namespace Brenner.SilentCmd;
 
 public class Configuration
 {
+    private const string _STR_SPACE = " ";
     public bool LogAppend { get; private set; }
     public string? LogFilePath { get; private set; }
     public string BatchFilePath { get; set; }
@@ -32,11 +33,10 @@ public class Configuration
     {
         var argumentsBuilder = new StringBuilder();
         var batchFilePathWasRead = false;
-        string? argValue;
 
         foreach (string arg in args)
         {
-            if (ArgumentParser.TryGetValue(arg, "/LOG+", out argValue))
+            if (ArgumentParser.TryGetValue(arg, "/LOG+", out string? argValue))
             {
                 LogAppend = true;
                 LogFilePath = argValue;
@@ -68,7 +68,7 @@ public class Configuration
                 continue;
             }
 
-            if (arg.Contains(" "))
+            if (arg.Contains(_STR_SPACE))
             {
                 argumentsBuilder.AppendFormat("\"{0}\" ", arg);
                 continue;

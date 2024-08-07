@@ -6,14 +6,17 @@ using Brenner.SilentCmd.Properties;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Runtime.Versioning;
 
 namespace Brenner.SilentCmd;
 
-internal class Engine
+[SupportedOSPlatform("windows")]
+internal class Engine : IDisposable
 {
-    private Configuration _config = new Configuration();
-    private readonly LogWriter _logWriter = new LogWriter();
-    
+    private readonly Configuration _config = new();
+    private readonly LogWriter _logWriter = new();
+
+
     /// <summary>
     /// Executes the batch file defined in the arguments
     /// </summary>
@@ -35,22 +38,20 @@ internal class Engine
 
             _logWriter.WriteLine(Resources.StartingCommand, _config.BatchFilePath);
 
-            using (var process = new Process())
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo(_config.BatchFilePath, _config.BatchFileArguments)
             {
-                process.StartInfo = new ProcessStartInfo(_config.BatchFilePath, _config.BatchFileArguments)
-                {
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,   // CreateNoWindow only works, if shell is not used
-                    CreateNoWindow = true
-                };
-                process.OutputDataReceived += OutputHandler;
-                process.ErrorDataReceived += OutputHandler;
-                process.Start();
-                process.BeginOutputReadLine();
-                process.WaitForExit();
-                return process.ExitCode;
-            }
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,   // CreateNoWindow only works, if shell is not used
+                CreateNoWindow = true
+            };
+            process.OutputDataReceived += OutputHandler;
+            process.ErrorDataReceived += OutputHandler;
+            process.Start();
+            process.BeginOutputReadLine();
+            process.WaitForExit();
+            return process.ExitCode;
         }
         catch (Exception e)
         {
@@ -122,5 +123,10 @@ internal class Engine
     private void OutputHandler(object sender, DataReceivedEventArgs e)
     {
         _logWriter.WriteLine(e.Data ?? "");
+    }
+
+    public void Dispose()
+    {
+        _logWriter?.Dispose();
     }
 }

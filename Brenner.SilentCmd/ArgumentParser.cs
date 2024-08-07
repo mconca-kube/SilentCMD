@@ -15,7 +15,7 @@ public static class ArgumentParser
         if (IsName(arg, name))
         {
             int startPosition = name.Length + 1;   // +1 because of colon separator
-            value = arg.Substring(startPosition).Trim('"');
+            value = arg[startPosition..].Trim('"');
             return true;
         }
 
